@@ -1,0 +1,100 @@
+[
+  {
+    "objectID": "Assessment 1.html",
+    "href": "Assessment 1.html",
+    "title": "Assessment 1",
+    "section": "",
+    "text": "100 participants took part in a study on the relationship between subjective workload and system usability in the use of voice user interfaces.\nParticipants were invited to complete a set of 10 everyday tasks with Amazon Alexa via an Echo smart speaker. After completing the tasks, participants were asked to complete two questionnaires, the Raw NASA Task Load Index (RTLX - Hart & Staveland, 1988; Hart 2006) and the System Usability Scale (Brooke 1996).\nThe RTLX is a 6 item, 21 point questionnaire on which people are asked to rate the subjective workload of a task across dimensions including mental demand, physical demand, temporal demand, performance, effort and frustration.The scale ranges from a minimum total score of 0 to a maximum of 126.\nThe SUS is a 10 item 5 point Likert scale questionnaire (ranging from 0 to 4) measuring the perceived usability of a computer system. The scale ranges from a minimum total score of 0 to a maximum total score of 100, as scores are summed and then multiplied by 2.5."
+  },
+  {
+    "objectID": "Assessment 1.html#study-details",
+    "href": "Assessment 1.html#study-details",
+    "title": "Assessment 1",
+    "section": "",
+    "text": "100 participants took part in a study on the relationship between subjective workload and system usability in the use of voice user interfaces.\nParticipants were invited to complete a set of 10 everyday tasks with Amazon Alexa via an Echo smart speaker. After completing the tasks, participants were asked to complete two questionnaires, the Raw NASA Task Load Index (RTLX - Hart & Staveland, 1988; Hart 2006) and the System Usability Scale (Brooke 1996).\nThe RTLX is a 6 item, 21 point questionnaire on which people are asked to rate the subjective workload of a task across dimensions including mental demand, physical demand, temporal demand, performance, effort and frustration.The scale ranges from a minimum total score of 0 to a maximum of 126.\nThe SUS is a 10 item 5 point Likert scale questionnaire (ranging from 0 to 4) measuring the perceived usability of a computer system. The scale ranges from a minimum total score of 0 to a maximum total score of 100, as scores are summed and then multiplied by 2.5."
+  },
+  {
+    "objectID": "Assessment 1.html#analysis-task",
+    "href": "Assessment 1.html#analysis-task",
+    "title": "Assessment 1",
+    "section": "Analysis Task",
+    "text": "Analysis Task\nAnalyse the data in R to research the following experimental hypothesis: H1: There will be a statistically significant relationship between RTLX and SUS."
+  },
+  {
+    "objectID": "Assessment 1.html#code",
+    "href": "Assessment 1.html#code",
+    "title": "Assessment 1",
+    "section": "Code",
+    "text": "Code\n\nRead Data\n\nScores &lt;- read_csv(\"./SusRtlx.csv\") |&gt;\n  select(SUS.Score, RTLX.Score)\n\nRows: 100 Columns: 3\n── Column specification ────────────────────────────────────────────────────────\nDelimiter: \",\"\ndbl (3): ID, SUS.Score, RTLX.Score\n\nℹ Use `spec()` to retrieve the full column specification for this data.\nℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.\n\nScores |&gt; head()\n\n# A tibble: 6 × 2\n  SUS.Score RTLX.Score\n      &lt;dbl&gt;      &lt;dbl&gt;\n1      15           25\n2      55           38\n3      87.5         42\n4      45           39\n5      80           49\n6      22.5         35\n\nScores |&gt; tail()\n\n# A tibble: 6 × 2\n  SUS.Score RTLX.Score\n      &lt;dbl&gt;      &lt;dbl&gt;\n1      60           53\n2      82.5         51\n3      75           54\n4      12.5         31\n5      87.5         50\n6      65           51\n\n\n\n\nData Clean\n\nScores &lt;- Scores |&gt;\n  mutate(\n    SUS.Score = if_else(\n      SUS.Score &lt; 0 | SUS.Score &gt; 100, NA, SUS.Score\n    )\n  )\nScores &lt;- Scores |&gt;\n  mutate(\n    RTLX.Score = if_else(\n      RTLX.Score &lt; 0 | RTLX.Score &gt; 126, NA, RTLX.Score\n    )\n  )\n\n\n\nDescriptive Statistics\n\nstatistics &lt;- \\(x) {\n  tibble(\n    N=length(x),\n    min=min(x, na.rm=TRUE),\n    max=max(x, na.rm=TRUE),\n    mean=mean(x, na.rm=TRUE),\n    sd=sd(x, na.rm=TRUE),\n    median=median(x, na.rm=TRUE),\n    IQR=IQR(x, na.rm=TRUE)\n  )\n}\nScores$SUS.Score |&gt;\n  statistics()\n\n# A tibble: 1 × 7\n      N   min   max  mean    sd median   IQR\n  &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt;\n1   100     0   100  53.7  23.3   52.5  34.4\n\nScores$RTLX.Score |&gt;\n  statistics()\n\n# A tibble: 1 × 7\n      N   min   max  mean    sd median   IQR\n  &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt;\n1   100    20    62  42.6  9.41   42.5  13.2\n\n\n\n\nDraw Plot\n\nScores |&gt;\n  filter(!is.na(SUS.Score)) |&gt;\n  ggplot(aes(SUS.Score)) +\n  geom_histogram(aes(, after_stat(count)),\n    binwidth = 10, center = 5,\n    color = \"darkblue\", fill = \"lightblue\") +\n  ggtitle(\"Histogram of SUS Score\") +\n  xlab(\"SUS Score\") + ylab(\"Count\") +\n  theme_bw()\n\n\n\nScores |&gt;\n  filter(!is.na(RTLX.Score)) |&gt;\n  ggplot(aes(RTLX.Score)) +\n  geom_histogram(aes(, after_stat(count)),\n    binwidth = 5, boundary = 5,\n    color = \"darkgreen\", fill = \"lightgreen\") +\n  ggtitle(\"Histogram of RTLX Score\") +\n  xlab(\"RTLX Score\") + ylab(\"Count\") +\n  theme_bw()\n\n\n\nScores |&gt;\n  filter(!is.na(SUS.Score)) |&gt;\n  ggplot(aes(, SUS.Score)) +\n  geom_boxplot(\n    color = \"darkblue\", fill= \"lightblue\") +\n  ggtitle(\"Boxplot of SUS Score\") +\n  ylab(\"SUS Score\") +\n  theme_bw()\n\n\n\nScores |&gt;\n  filter(!is.na(RTLX.Score)) |&gt;\n  ggplot(aes(, RTLX.Score)) +\n  geom_boxplot(\n    color = \"darkgreen\", fill= \"lightgreen\") +\n  ggtitle(\"Boxplot of RTLX Score\") +\n  ylab(\"RTLX Score\") +\n  theme_bw()\n\n\n\nScores |&gt;\n  filter(!is.na(SUS.Score) & !is.na(RTLX.Score)) |&gt;\n  ggplot(aes(RTLX.Score, SUS.Score)) +\n  geom_point(color = \"forestgreen\") +\n  geom_smooth(method = \"lm\",\n    color = \"royalblue\", fill = \"skyblue\", alpha = 0.5) +\n  ggtitle(\"Plot of SUS Score and RTLX Score\") +\n  xlab(\"RTLX Score\") + ylab(\"SUS Score\") +\n  theme_bw()\n\n`geom_smooth()` using formula = 'y ~ x'\n\n\n\n\n\n\n\nAnalyse Data\n\nScores |&gt;\n  filter(!is.na(SUS.Score) & !is.na(RTLX.Score)) |&gt;\n  with(cor.test(RTLX.Score, SUS.Score))\n\n\n    Pearson's product-moment correlation\n\ndata:  RTLX.Score and SUS.Score\nt = 9.1098, df = 96, p-value = 1.216e-14\nalternative hypothesis: true correlation is not equal to 0\n95 percent confidence interval:\n 0.5578717 0.7746749\nsample estimates:\n      cor \n0.6809193 \n\nScores |&gt;\n  filter(!is.na(SUS.Score) & !is.na(RTLX.Score)) |&gt;\n  with(lm(SUS.Score ~ RTLX.Score)) |&gt;\n  summary()\n\n\nCall:\nlm(formula = SUS.Score ~ RTLX.Score)\n\nResiduals:\n    Min      1Q  Median      3Q     Max \n-44.728 -11.402   0.122  11.098  45.862 \n\nCoefficients:\n            Estimate Std. Error t value Pr(&gt;|t|)    \n(Intercept)  -18.484      8.111  -2.279   0.0249 *  \nRTLX.Score     1.695      0.186   9.110 1.22e-14 ***\n---\nSignif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1\n\nResidual standard error: 17.17 on 96 degrees of freedom\nMultiple R-squared:  0.4637,    Adjusted R-squared:  0.4581 \nF-statistic: 82.99 on 1 and 96 DF,  p-value: 1.216e-14"
+  },
+  {
+    "objectID": "Assessment 1.html#result",
+    "href": "Assessment 1.html#result",
+    "title": "Assessment 1",
+    "section": "Result",
+    "text": "Result\nExperiment hypothesis H1: There will be a statistically significant relationship between RTLX and SUS was supported"
+  },
+  {
+    "objectID": "Assessment 1.html#discussion",
+    "href": "Assessment 1.html#discussion",
+    "title": "Assessment 1",
+    "section": "Discussion",
+    "text": "Discussion\nMy intuitive assumption is that there is a negative relationship between system usability and subjective workload, but the finding indicates a positive relationship between them.\nThe outcome also contradicts the result of another experiment conducted by Longo and Dondio (2015) in which they found that there is no relationship between them.\nI found that the standard deviation and the interquartile range of RTLX are substantially smaller than those of SUS, which means that although participants in this experiment had similar judgments about subjective workload, their assessments about system usability are considerably different.\nThis situation could be caused by the limitations of the experiment which overlooked differences between tasks and diversity of participants."
+  },
+  {
+    "objectID": "Assessment 1.html#reference",
+    "href": "Assessment 1.html#reference",
+    "title": "Assessment 1",
+    "section": "Reference",
+    "text": "Reference\nBrooke, J. (1996). SUS-A quick and dirty usability scale. Usability evaluation in industry, 189(194), 4-7.\nHart, S. G., & Staveland, L. E. (1988). Development of NASA-TLX (Task Load Index): Results of empirical and theoretical research. In Advances in psychology (Vol. 52, pp. 139-183). North-Holland.\nHart, S. G. (2006). NASA-task load index (NASA-TLX); 20 years later. In Proceedings of the human factors and ergonomics society annual meeting (Vol. 50, No. 9, pp. 904-908). Sage CA: Los Angeles, CA: Sage publications.\nLongo, L., & Dondio, P. (2015). On the relationship between perception of usability and subjective mental workload of web interfaces. In 2015 IEEE/WIC/ACM International Conference on Web Intelligence and Intelligent Agent Technology (WI-IAT) (Vol. 1, pp. 345-352). IEEE.\nWu, Y., Edwards, J., Cooney, O., Bleakley, A., Doyle, P. R., Clark, L., … & Cowan, B. R. (2020). Mental workload and language production in non-native speaker IPA interaction. In Proceedings of the 2nd Conference on Conversational User Interfaces (pp. 1-8)."
+  },
+  {
+    "objectID": "Assessment 2.html",
+    "href": "Assessment 2.html",
+    "title": "Assessment 2",
+    "section": "",
+    "text": "64 participants took part in a study on the effects of interruptions while playing a computer game.\nParticipants were asked to play the computer game Tetris for 15 minutes in either of two conditions in a between-participants design: visual interruptions or audio interruptions.\nThe game automatically scored participants’ Tetris gameplay on a scale from 0 (lowest possible score) to 100 (highest possible score).\nParticipants in the visual interruptions condition saw a banner across the top of their game screen which showed a fake advertisement and flashed between yellow and red border colors.\nParticipants in the audio interruptions condition heard the same fake advertisement read aloud through their computer speakers and played siren sound effect.\nIn both interruption conditions, interruptions occurred once every three minutes and lasted for 20 seconds.\nAll participants had normal or corrected-to-normal hearing and vision and reported that they play Tetris regularly."
+  },
+  {
+    "objectID": "Assessment 2.html#study-details",
+    "href": "Assessment 2.html#study-details",
+    "title": "Assessment 2",
+    "section": "",
+    "text": "64 participants took part in a study on the effects of interruptions while playing a computer game.\nParticipants were asked to play the computer game Tetris for 15 minutes in either of two conditions in a between-participants design: visual interruptions or audio interruptions.\nThe game automatically scored participants’ Tetris gameplay on a scale from 0 (lowest possible score) to 100 (highest possible score).\nParticipants in the visual interruptions condition saw a banner across the top of their game screen which showed a fake advertisement and flashed between yellow and red border colors.\nParticipants in the audio interruptions condition heard the same fake advertisement read aloud through their computer speakers and played siren sound effect.\nIn both interruption conditions, interruptions occurred once every three minutes and lasted for 20 seconds.\nAll participants had normal or corrected-to-normal hearing and vision and reported that they play Tetris regularly."
+  },
+  {
+    "objectID": "Assessment 2.html#analysis-task",
+    "href": "Assessment 2.html#analysis-task",
+    "title": "Assessment 2",
+    "section": "Analysis Task",
+    "text": "Analysis Task\nAnalyse the data in R to research the following experimental hypothesis: H1: There is a statistically significant difference in the effect of visual interruptions and the effect of audio interruptions on participant’s Tetris gameplay performance."
+  },
+  {
+    "objectID": "Assessment 2.html#code",
+    "href": "Assessment 2.html#code",
+    "title": "Assessment 2",
+    "section": "Code",
+    "text": "Code\n\nRead Data\n\ntetris &lt;- read_csv(\"./tetris.csv\") |&gt;\n  select(condition,score) |&gt;\n  mutate(condition = factor(condition))\n\nRows: 64 Columns: 3\n── Column specification ────────────────────────────────────────────────────────\nDelimiter: \",\"\nchr (1): condition\ndbl (2): ID, score\n\nℹ Use `spec()` to retrieve the full column specification for this data.\nℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.\n\ntetris |&gt; head()\n\n# A tibble: 6 × 2\n  condition score\n  &lt;fct&gt;     &lt;dbl&gt;\n1 auditory     76\n2 auditory     68\n3 auditory     45\n4 auditory     44\n5 auditory     69\n6 auditory     80\n\ntetris |&gt; tail()\n\n# A tibble: 6 × 2\n  condition score\n  &lt;fct&gt;     &lt;dbl&gt;\n1 visual       54\n2 visual       33\n3 visual       55\n4 visual       38\n5 visual       52\n6 visual       31\n\n\n\n\nDescriptive Statistics\n\ntetris |&gt;\n  group_by(condition) |&gt;\n  summarise(\n    N=length(score),\n    min=min(score),\n    max=max(score),\n    mean=mean(score),\n    sd=sd(score),\n    median=median(score),\n    IQR=IQR(score)\n  )\n\n# A tibble: 2 × 8\n  condition     N   min   max  mean    sd median   IQR\n  &lt;fct&gt;     &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt;\n1 auditory     32    44    87  67.9  11.1     69  16  \n2 visual       32    29    74  46.6  11.8     46  14.8\n\n\n\n\nDraw Plot\n\ntetris |&gt;\n  ggplot(aes(condition, score, fill = condition)) +\n  geom_boxplot() +\n  guides(fill = \"none\") +\n  ggtitle(\"Boxplot of auditory and visual\") +\n  ylab(\"Score\") +\n  theme_bw()\n\n\n\ntetris |&gt;\n  ggplot(aes(score, fill = condition)) +\n  geom_histogram(\n    aes(, after_stat(count)),\n    binwidth = 5, center = 2.5,\n    color=\"black\") +\n  guides(fill = \"none\") +\n  ggtitle(\"Histogram of auditory and visual\") +\n  xlab(\"Score\") + ylab(\"Count\") +\n  theme_bw()\n\n\n\n\n\n\nTest Assumption\n\ntetris |&gt;\n  filter(condition == \"auditory\") |&gt;\n  pull(score) |&gt;\n  shapiro.test()\n\n\n    Shapiro-Wilk normality test\n\ndata:  pull(filter(tetris, condition == \"auditory\"), score)\nW = 0.95218, p-value = 0.1662\n\ntetris |&gt;\n  filter(condition == \"visual\") |&gt;\n  pull(score) |&gt;\n  shapiro.test()\n\n\n    Shapiro-Wilk normality test\n\ndata:  pull(filter(tetris, condition == \"visual\"), score)\nW = 0.9638, p-value = 0.3477\n\n\n\ntetris |&gt;\n  with(leveneTest(score, condition))\n\nLevene's Test for Homogeneity of Variance (center = median)\n      Df F value Pr(&gt;F)\ngroup  1  0.3748 0.5426\n      62               \n\n\n\n\nAnalyse Data\n\ntetris |&gt;\n  with(t.test(score ~ condition, paired = FALSE))\n\n\n    Welch Two Sample t-test\n\ndata:  score by condition\nt = 7.456, df = 61.736, p-value = 3.564e-10\nalternative hypothesis: true difference in means between group auditory and group visual is not equal to 0\n95 percent confidence interval:\n 15.59805 27.02695\nsample estimates:\nmean in group auditory   mean in group visual \n               67.9375                46.6250 \n\n\n\n\nDraw Plot\n\ntetris |&gt;\n  ggplot(aes(condition, score, fill = condition)) +\n  stat_summary(fun = mean, geom = \"bar\") +\n  stat_summary(\n    fun.min = (\n      \\(x) {\n        mean(x) + (sd(x) / sqrt(length(x)))\n      }\n    ),\n    fun.max = (\n      \\(x) {\n        mean(x) - (sd(x) / sqrt(length(x)))\n      }\n    ), geom = \"errorbar\", width = 0.5) +\n  guides(fill = \"none\") +\n  ggtitle(\"Barplot of auditory and visual\") +\n  xlab(\"Condition\") + ylab(\"Mean Score\") +\n  theme_bw()"
+  },
+  {
+    "objectID": "Assessment 2.html#result",
+    "href": "Assessment 2.html#result",
+    "title": "Assessment 2",
+    "section": "Result",
+    "text": "Result\nExperiment hypothesis H1: There is a statistically significant difference in the effect of visual interruptions and the effect of audio interruptions on participant’s Tetris gameplay performance was supported."
+  },
+  {
+    "objectID": "Assessment 2.html#discussion",
+    "href": "Assessment 2.html#discussion",
+    "title": "Assessment 2",
+    "section": "Discussion",
+    "text": "Discussion\nThe result of this experiment shows that audio interruption has less disruption to users than visual interruptions.\nHowever, this experiment only tested the disruption brought by visual and audio interruptions, but ignored their different effectiveness of delivering information in multi-task circumstances."
+  },
+  {
+    "objectID": "Assessment 2.html#reference",
+    "href": "Assessment 2.html#reference",
+    "title": "Assessment 2",
+    "section": "Reference",
+    "text": "Reference\nEdwards, J., Janssen, C., Gould, S., & Cowan, B. R. (2021). Eliciting spoken interruptions to inform proactive speech agent design. In CUI 2021-3rd Conference on Conversational User Interfaces (pp. 1-12).\nWickens, C. D., Dixon, S. R., & Seppelt, B. (2005). Auditory preemption versus multiple resources: Who wins in interruption management?. In Proceedings of the Human Factors and Ergonomics Society Annual Meeting (Vol. 49, No. 3, pp. 463-466). Sage CA: Los Angeles, CA: SAGE Publications.\nWarnock, D., McGee-Lennon, M., & Brewster, S. (2011). The role of modality in notification performance. In IFIP Conference on Human-Computer Interaction (pp. 572-588). Springer, Berlin, Heidelberg.\nZhao, S., Brumby, D. P., Chignell, M., Salvucci, D., & Goyal, S. (2013). Shared input multimodal mobile interfaces: Interaction modality effects on menu selection in single-task and dual-task environments. Interacting with computers, 25(5), 386-403."
+  }
+]
