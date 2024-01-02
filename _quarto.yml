@@ -1,3 +1,28 @@
 project:
   type: website
   output-dir: docs
+
+website:
+  title: "Learning Statistics"
+  favicon: R.svg
+  navbar:
+    left:
+      - text: "Home"
+        file: index.qmd
+  reader-mode: true
+  sidebar:
+    style: "floating"
+    contents:
+      - section: "Assessments"
+        contents:
+          - Assessment 1.qmd
+          - Assessment 2.qmd
+  page-navigation: true
+  back-to-top-navigation: true
+  page-footer: "Copyright 2024, Haomin Zhang"
+
+format:
+  html:
+    theme: default
+    css: styles.css
+    toc: true
