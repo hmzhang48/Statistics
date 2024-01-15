@@ -17,6 +17,9 @@ website:
         contents:
           - Assessment 1.qmd
           - Assessment 2.qmd
+      - section: "Machine Learning"
+        contents:
+          - Titanic.qmd
   page-navigation: true
   back-to-top-navigation: true
   page-footer: "Copyright 2024, Haomin Zhang"
