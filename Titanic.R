@@ -5,57 +5,45 @@ conflicts_prefer(dplyr::filter())
 conflicts_prefer(dplyr::lag())
 conflicts_prefer(recipes::step())
 titanic_train <- read.csv("Assessment/titanic_train.csv")
-glimpse(titanic_train)
-titanic_train[titanic_train==""] <- NA
-titanic_train <- titanic_train |>
+titanic_test <- read.csv("Assessment/titanic_test.csv")
+titanic_data <- bind_rows(
+  list("train"=titanic_train, "test"=titanic_test),
+  .id = "From"
+)
+glimpse(titanic_data)
+titanic_data[titanic_data==""] <- NA
+titanic_data <- titanic_data |>
   mutate(
-    Survived=case_match(
-      Survived,
-      0 ~ "No",
-      1 ~ "Yes"
-    ),
     Survived=as.factor(Survived),
     Survived=fct_rev(Survived),
     Pclass=as.factor(Pclass),
     Sex=as.factor(Sex),
     Sex=fct_rev(Sex),
-    Age=case_when(
-      Age/10 <= 1 ~ "0-10",
-      Age/10 <= 2 ~ "10-20",
-      Age/10 <= 3 ~ "20-30",
-      Age/10 <= 4 ~ "30-40",
-      Age/10 <= 5 ~ "40-50",
-      Age/10 <= 6 ~ "50-60",
-      Age/10 > 6 ~ "60+",
-      is.na(Age) ~ NA,
-    ),
-    Age=as.factor(Age),
-    Family=SibSp + Parch,
-    Family=case_when(
-      Family == 0 ~ "Single",
-      Family <= 3 ~ "Small",
-      between(Family, 4, 6) ~ "Medium",
-      Family >= 7 ~ "Large"
-    ),
-    Family=as.factor(Family),
-    Family=fct_rev(Family) |> fct_relevel("Single"),
-    Embarked=case_match(
-      Embarked,
-      "C" ~ "Cherbourg",
-      "Q" ~ "Queenstown",
-      "S" ~ "Southampton",
-      .default=NA,
-    ),
+    Family=SibSp + Parch + 1,
+    Ticket=as.factor(Ticket),
     Embarked=as.factor(Embarked)
-  )
+  ) |> group_by(Ticket) |>
+  mutate(
+    Group=n(),
+    Fare=round(Fare/Group, 4)
+  ) |> ungroup()
+titanic_train <- titanic_data |>
+  filter(From=="train") |>
+  select(-From)
+titanic_test <- titanic_data |>
+  filter(From=="test") |>
+  select(-From,-Survived)
 titanic_train |>
   ggplot(aes(x=Age, fill=Sex)) +
-  geom_bar(position = "dodge") +
-  theme_bw()
+  geom_histogram(
+    position = "dodge", binwidth = 10, center = 5, na.rm=TRUE
+  ) + theme_bw()
 titanic_train |>
   ggplot(aes(x=Age, group=Survived, fill=Survived)) +
-  geom_bar(aes(y=after_stat(prop)), position="dodge") +
-  theme_bw()
+  geom_histogram(
+    aes(y=after_stat(density)),
+    position="dodge", binwidth = 10, center = 5, na.rm=TRUE
+  ) + theme_bw()
 titanic_train |>
   ggplot(aes(x=Sex, group=Survived, fill=Survived)) +
   geom_bar(aes(y=after_stat(prop)), position="dodge") +
@@ -69,40 +57,71 @@ titanic_train |>
   geom_bar(aes(y=after_stat(prop)), position="dodge") +
   theme_bw()
 titanic_train |>
+  ggplot(aes(x=Fare, group=Survived, fill=Survived)) +
+  geom_histogram(
+    aes(y=after_stat(density)),
+    position="dodge", binwidth = 25, center = 12.5
+  ) + theme_bw()
+titanic_train |>
   ggplot(aes(x=Embarked, group=Survived, fill=Survived)) +
-  geom_bar(aes(y=after_stat(prop)), position="dodge") +
-  theme_bw()
-data <- titanic_train |>
-  select(Survived, Age, Sex, Family, Pclass, Embarked)
+  geom_bar(
+    aes(y=after_stat(prop)),
+    position="dodge", na.rm=TRUE
+  ) + theme_bw()
+train_data <- titanic_train |>
+  select(
+    Survived,
+    Age, Sex, Family,
+    Pclass, Ticket, Fare, Embarked
+  )
+test_data <- titanic_test |>
+  select(
+    PassengerId,
+    Age, Sex, Family,
+    Pclass, Ticket, Fare, Embarked
+  )
 set.seed(1024)
-split <- initial_split(data)
-folds <- vfold_cv(data, strata=Survived)
-recipe <- recipe(Survived ~ ., data=split) |>
+split_data <- initial_split(train_data)
+fold_data <- vfold_cv(train_data, strata=Survived)
+model <- rand_forest(
+  mode="classification", engine="ranger", trees=1000,
+  mtry=tune(), min_n=tune()
+)
+recipe <- recipe(Survived ~ ., data=split_data) |>
   step_impute_knn(
-    Age, Embarked,
-    impute_with=imp_vars(Sex, Family, Pclass)
+    Age, Fare, Embarked,
+    impute_with=imp_vars(
+      Sex, Family, Pclass, Ticket
+    )
   )
-dummy <- recipe |>
-  step_dummy(
-    all_nominal_predictors(),
-    one_hot=TRUE
+workflow <- workflow() |>
+  add_recipe(recipe) |>
+  add_model(model)
+grid <- grid_max_entropy(
+  mtry(c(1,7)),
+  min_n(),
+  size=20
+)
+tune <- workflow |>
+  tune_grid(
+    resamples=fold_data,
+    grid=grid,
+    metrics=metric_set(accuracy, roc_auc)
   )
-work <- \(model, recipe){
-  workflow <- workflow() |>
-    add_recipe(recipe) |>
-    add_model(model)
-  workflow |>
-    last_fit(split) |>
-    collect_metrics() |>
-    print()
-  workflow |>
-    fit_resamples(folds) |>
-    collect_metrics() |>
-    print()
-}
-rand_forest(
-  mode="classification", engine="ranger"
-) |> work(recipe)
-boost_tree(
-  mode="classification", engine="xgboost"
-) |> work(dummy)
+tune |> autoplot()
+tune |> show_best(metric="accuracy")
+tune |> show_best(metric="roc_auc")
+params <- tune |> select_best(metric="roc_auc")
+final <- workflow |>
+  finalize_workflow(params)
+final |> last_fit(split_data) |>
+  collect_metrics()
+fit <- final |> fit(train_data)
+predict <- fit |> predict(test_data) |>
+  rename(Survived=.pred_class)
+submission <- test_data |>
+  select(PassengerId) |>
+  bind_cols(predict)
+submission |> write.csv(
+  "submission.csv", row.names = FALSE
+)
