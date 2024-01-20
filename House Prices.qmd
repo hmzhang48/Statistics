@@ -333,6 +333,34 @@ train_data |>
   theme_bw()
 ```
 
+## Test Correlation
+
+```{r}
+for(x in columns){
+  if(is.factor(train_data[[x]])){
+    cat("x=", x, "\n")
+    kruskal.test(
+      train_data$SalePrice, train_data[[x]]
+    ) |> print()
+  }else if(is.element(x, sequences)){
+    cat("x=", x, "\n")
+    kruskal.test(
+      train_data$SalePrice, as.factor(train_data[[x]])
+    ) |> print()
+  }else if(is.numeric(train_data[[x]])){
+    cat("x=", x, "\n")
+    cor.test(
+      train_data$SalePrice, train_data[[x]],
+      method="kendall"
+    ) |> print()
+  }
+}
+train_data <- train_data |>
+  select(-Street, -Utilities, -LandSlope, -BsmtFinSF2, -BsmtHalfBath, -PoolQC, -MoSold, -YrSold)
+test_data <- test_data |>
+  select(-Street, -Utilities, -LandSlope, -BsmtFinSF2, -BsmtHalfBath, -PoolQC, -MoSold, -YrSold)
+```
+
 ## Split Data
 
 ```{r}
@@ -356,9 +384,9 @@ model <- boost_tree(
 ```{r}
 recipe <- recipe(SalePrice ~ ., data=split_data) |>
   step_impute_knn(
-    MSZoning, LotFrontage, Utilities, Electrical,
+    MSZoning, LotFrontage, Electrical,
     impute_with=imp_vars(
-      MSSubClass, Street, Neighborhood,
+      MSSubClass, Neighborhood
     )
   ) |>
   step_impute_knn(
@@ -368,25 +396,18 @@ recipe <- recipe(SalePrice ~ ., data=split_data) |>
     )
   ) |>
   step_impute_knn(
-    BsmtQual, BsmtCond, BsmtExposure, BsmtFinType2,
-    BsmtFullBath, BsmtHalfBath,
+    BsmtQual, BsmtCond, BsmtExposure, BsmtFinType2, BsmtFullBath,
     impute_with=imp_vars(
-      BsmtFinType1, BsmtFinSF1, BsmtFinSF2,
-      BsmtUnfSF, TotalBsmtSF
+      BsmtFinType1, BsmtFinSF1, BsmtUnfSF, TotalBsmtSF
     )
   ) |>
   step_impute_knn(
-    GarageYrBlt, GarageFinish, GarageCars,
-    GarageArea, GarageQual, GarageCond,
+    GarageYrBlt, GarageFinish, GarageCars, GarageArea, GarageQual, GarageCond,
     impute_with=imp_vars(GarageType)
   ) |>
   step_impute_knn(
     KitchenQual,
     impute_with=imp_vars(KitchenAbvGr)
-  ) |>
-  step_impute_knn(
-    PoolQC,
-    impute_with=imp_vars(PoolArea)
   ) |>
   step_impute_knn(
     SaleType,

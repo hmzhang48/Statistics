@@ -214,6 +214,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#count-na" id="toc-count-na" class="nav-link" data-scroll-target="#count-na">Count NA</a></li>
   <li><a href="#convert-data" id="toc-convert-data" class="nav-link" data-scroll-target="#convert-data">Convert Data</a></li>
   <li><a href="#draw-plot" id="toc-draw-plot" class="nav-link" data-scroll-target="#draw-plot">Draw Plot</a></li>
+  <li><a href="#test-correlation" id="toc-test-correlation" class="nav-link" data-scroll-target="#test-correlation">Test Correlation</a></li>
   <li><a href="#split-data" id="toc-split-data" class="nav-link" data-scroll-target="#split-data">Split Data</a></li>
   <li><a href="#create-model" id="toc-create-model" class="nav-link" data-scroll-target="#create-model">Create Model</a></li>
   <li><a href="#create-recipe" id="toc-create-recipe" class="nav-link" data-scroll-target="#create-recipe">Create Recipe</a></li>
@@ -1247,149 +1248,804 @@ $ SalePrice     &lt;int&gt; 208500, 181500, 223500, 140000, 250000, 143000, 3070
 </div>
 </div>
 </section>
+<section id="test-correlation" class="level2">
+<h2 class="anchored" data-anchor-id="test-correlation">Test Correlation</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(x <span class="cf">in</span> columns){</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="fu">is.factor</span>(train_data[[x]])){</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span>(<span class="st">"x="</span>, x, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">kruskal.test</span>(</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>      train_data<span class="sc">$</span>SalePrice, train_data[[x]]</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">|&gt;</span> <span class="fu">print</span>()</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>  }<span class="cf">else</span> <span class="cf">if</span>(<span class="fu">is.element</span>(x, sequences)){</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span>(<span class="st">"x="</span>, x, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">kruskal.test</span>(</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>      train_data<span class="sc">$</span>SalePrice, <span class="fu">as.factor</span>(train_data[[x]])</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">|&gt;</span> <span class="fu">print</span>()</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>  }<span class="cf">else</span> <span class="cf">if</span>(<span class="fu">is.numeric</span>(train_data[[x]])){</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span>(<span class="st">"x="</span>, x, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cor.test</span>(</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>      train_data<span class="sc">$</span>SalePrice, train_data[[x]],</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>      <span class="at">method=</span><span class="st">"kendall"</span></span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">|&gt;</span> <span class="fu">print</span>()</span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>x= MSSubClass 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and train_data[[x]]
+Kruskal-Wallis chi-squared = 531.54, df = 14, p-value &lt; 2.2e-16
+
+x= MSZoning 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and train_data[[x]]
+Kruskal-Wallis chi-squared = 270.07, df = 4, p-value &lt; 2.2e-16
+
+x= LotFrontage 
+
+    Kendall's rank correlation tau
+
+data:  train_data$SalePrice and train_data[[x]]
+z = 14.823, p-value &lt; 2.2e-16
+alternative hypothesis: true tau is not equal to 0
+sample estimates:
+      tau 
+0.2903612 
+
+x= LotArea 
+
+    Kendall's rank correlation tau
+
+data:  train_data$SalePrice and train_data[[x]]
+z = 17.95, p-value &lt; 2.2e-16
+alternative hypothesis: true tau is not equal to 0
+sample estimates:
+      tau 
+0.3141744 
+
+x= Street 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and train_data[[x]]
+Kruskal-Wallis chi-squared = 3.0624, df = 1, p-value = 0.08013
+
+x= Alley 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and train_data[[x]]
+Kruskal-Wallis chi-squared = 45.714, df = 2, p-value = 1.184e-10
+
+x= LotShape 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and train_data[[x]]
+Kruskal-Wallis chi-squared = 150.95, df = 3, p-value &lt; 2.2e-16
+
+x= LandContour 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and train_data[[x]]
+Kruskal-Wallis chi-squared = 35.31, df = 3, p-value = 1.048e-07
+
+x= Utilities 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and train_data[[x]]
+Kruskal-Wallis chi-squared = 0.40737, df = 1, p-value = 0.5233
+
+x= LotConfig 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and train_data[[x]]
+Kruskal-Wallis chi-squared = 35.724, df = 4, p-value = 3.298e-07
+
+x= LandSlope 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and train_data[[x]]
+Kruskal-Wallis chi-squared = 3.9388, df = 2, p-value = 0.1395
+
+x= Neighborhood 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and train_data[[x]]
+Kruskal-Wallis chi-squared = 868.53, df = 24, p-value &lt; 2.2e-16
+
+x= Condition1 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and train_data[[x]]
+Kruskal-Wallis chi-squared = 74.404, df = 8, p-value = 6.493e-13
+
+x= Condition2 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and train_data[[x]]
+Kruskal-Wallis chi-squared = 17.774, df = 7, p-value = 0.01303
+
+x= BldgType 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and train_data[[x]]
+Kruskal-Wallis chi-squared = 69.801, df = 4, p-value = 2.501e-14
+
+x= HouseStyle 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and train_data[[x]]
+Kruskal-Wallis chi-squared = 185.43, df = 7, p-value &lt; 2.2e-16
+
+x= OverallQual 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and as.factor(train_data[[x]])
+Kruskal-Wallis chi-squared = 966.1, df = 9, p-value &lt; 2.2e-16
+
+x= OverallCond 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and as.factor(train_data[[x]])
+Kruskal-Wallis chi-squared = 238.77, df = 8, p-value &lt; 2.2e-16
+
+x= YearBuilt 
+
+    Kendall's rank correlation tau
+
+data:  train_data$SalePrice and train_data[[x]]
+z = -26.57, p-value &lt; 2.2e-16
+alternative hypothesis: true tau is not equal to 0
+sample estimates:
+       tau 
+-0.4685664 
+
+x= YearRemodAdd 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and train_data[[x]]
+Kruskal-Wallis chi-squared = 519.19, df = 6, p-value &lt; 2.2e-16
+
+x= RoofStyle 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and train_data[[x]]
+Kruskal-Wallis chi-squared = 39.878, df = 5, p-value = 1.581e-07
+
+x= RoofMatl 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and train_data[[x]]
+Kruskal-Wallis chi-squared = 18.872, df = 7, p-value = 0.008597
+
+x= Exterior1st 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and train_data[[x]]
+Kruskal-Wallis chi-squared = 304.04, df = 14, p-value &lt; 2.2e-16
+
+x= Exterior2nd 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and train_data[[x]]
+Kruskal-Wallis chi-squared = 35.231, df = 15, p-value = 0.002279
+
+x= MasVnrType 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and train_data[[x]]
+Kruskal-Wallis chi-squared = 270.81, df = 3, p-value &lt; 2.2e-16
+
+x= MasVnrArea 
+
+    Kendall's rank correlation tau
+
+data:  train_data$SalePrice and train_data[[x]]
+z = 16.404, p-value &lt; 2.2e-16
+alternative hypothesis: true tau is not equal to 0
+sample estimates:
+      tau 
+0.3172199 
+
+x= ExterQual 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and as.factor(train_data[[x]])
+Kruskal-Wallis chi-squared = 683.44, df = 3, p-value &lt; 2.2e-16
+
+x= ExterCond 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and as.factor(train_data[[x]])
+Kruskal-Wallis chi-squared = 46.617, df = 4, p-value = 1.832e-09
+
+x= Foundation 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and train_data[[x]]
+Kruskal-Wallis chi-squared = 488.72, df = 5, p-value &lt; 2.2e-16
+
+x= BsmtQual 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and as.factor(train_data[[x]])
+Kruskal-Wallis chi-squared = 674.41, df = 4, p-value &lt; 2.2e-16
+
+x= BsmtCond 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and as.factor(train_data[[x]])
+Kruskal-Wallis chi-squared = 120.88, df = 4, p-value &lt; 2.2e-16
+
+x= BsmtExposure 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and as.factor(train_data[[x]])
+Kruskal-Wallis chi-squared = 191.03, df = 4, p-value &lt; 2.2e-16
+
+x= BsmtFinType1 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and as.factor(train_data[[x]])
+Kruskal-Wallis chi-squared = 348.88, df = 6, p-value &lt; 2.2e-16
+
+x= BsmtFinSF1 
+
+    Kendall's rank correlation tau
+
+data:  train_data$SalePrice and train_data[[x]]
+z = 12.164, p-value &lt; 2.2e-16
+alternative hypothesis: true tau is not equal to 0
+sample estimates:
+      tau 
+0.2208792 
+
+x= BsmtFinType2 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and as.factor(train_data[[x]])
+Kruskal-Wallis chi-squared = 64.589, df = 6, p-value = 5.232e-12
+
+x= BsmtFinSF2 
+
+    Kendall's rank correlation tau
+
+data:  train_data$SalePrice and train_data[[x]]
+z = -1.476, p-value = 0.14
+alternative hypothesis: true tau is not equal to 0
+sample estimates:
+        tau 
+-0.03071045 
+
+x= BsmtUnfSF 
+
+    Kendall's rank correlation tau
+
+data:  train_data$SalePrice and train_data[[x]]
+z = 7.2624, p-value = 3.802e-13
+alternative hypothesis: true tau is not equal to 0
+sample estimates:
+      tau 
+0.1274574 
+
+x= TotalBsmtSF 
+
+    Kendall's rank correlation tau
+
+data:  train_data$SalePrice and train_data[[x]]
+z = 24.837, p-value &lt; 2.2e-16
+alternative hypothesis: true tau is not equal to 0
+sample estimates:
+      tau 
+0.4350183 
+
+x= Heating 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and train_data[[x]]
+Kruskal-Wallis chi-squared = 33.267, df = 5, p-value = 3.331e-06
+
+x= HeatingQC 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and as.factor(train_data[[x]])
+Kruskal-Wallis chi-squared = 356.78, df = 4, p-value &lt; 2.2e-16
+
+x= CentralAir 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and as.factor(train_data[[x]])
+Kruskal-Wallis chi-squared = 143.2, df = 1, p-value &lt; 2.2e-16
+
+x= Electrical 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and train_data[[x]]
+Kruskal-Wallis chi-squared = 131.42, df = 4, p-value &lt; 2.2e-16
+
+x= X1stFlrSF 
+
+    Kendall's rank correlation tau
+
+data:  train_data$SalePrice and train_data[[x]]
+z = 23.511, p-value &lt; 2.2e-16
+alternative hypothesis: true tau is not equal to 0
+sample estimates:
+      tau 
+0.4115564 
+
+x= X2ndFlrSF 
+
+    Kendall's rank correlation tau
+
+data:  train_data$SalePrice and train_data[[x]]
+z = 12.105, p-value &lt; 2.2e-16
+alternative hypothesis: true tau is not equal to 0
+sample estimates:
+      tau 
+0.2324971 
+
+x= LowQualFinSF 
+
+    Kendall's rank correlation tau
+
+data:  train_data$SalePrice and train_data[[x]]
+z = -2.5943, p-value = 0.00948
+alternative hypothesis: true tau is not equal to 0
+sample estimates:
+        tau 
+-0.05530811 
+
+x= GrLivArea 
+
+    Kendall's rank correlation tau
+
+data:  train_data$SalePrice and train_data[[x]]
+z = 31.079, p-value &lt; 2.2e-16
+alternative hypothesis: true tau is not equal to 0
+sample estimates:
+      tau 
+0.5439421 
+
+x= BsmtFullBath 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and as.factor(train_data[[x]])
+Kruskal-Wallis chi-squared = 73.976, df = 3, p-value = 6.006e-16
+
+x= BsmtHalfBath 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and as.factor(train_data[[x]])
+Kruskal-Wallis chi-squared = 0.23762, df = 2, p-value = 0.888
+
+x= FullBath 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and as.factor(train_data[[x]])
+Kruskal-Wallis chi-squared = 599.36, df = 3, p-value &lt; 2.2e-16
+
+x= HalfBath 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and as.factor(train_data[[x]])
+Kruskal-Wallis chi-squared = 179.32, df = 2, p-value &lt; 2.2e-16
+
+x= BedroomAbvGr 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and as.factor(train_data[[x]])
+Kruskal-Wallis chi-squared = 101.09, df = 7, p-value &lt; 2.2e-16
+
+x= KitchenAbvGr 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and as.factor(train_data[[x]])
+Kruskal-Wallis chi-squared = 43.206, df = 3, p-value = 2.225e-09
+
+x= KitchenQual 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and as.factor(train_data[[x]])
+Kruskal-Wallis chi-squared = 661.48, df = 3, p-value &lt; 2.2e-16
+
+x= TotRmsAbvGrd 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and as.factor(train_data[[x]])
+Kruskal-Wallis chi-squared = 419.41, df = 11, p-value &lt; 2.2e-16
+
+x= Functional 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and train_data[[x]]
+Kruskal-Wallis chi-squared = 32.56, df = 6, p-value = 1.274e-05
+
+x= Fireplaces 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and as.factor(train_data[[x]])
+Kruskal-Wallis chi-squared = 406.84, df = 3, p-value &lt; 2.2e-16
+
+x= FireplaceQu 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and as.factor(train_data[[x]])
+Kruskal-Wallis chi-squared = 461.9, df = 5, p-value &lt; 2.2e-16
+
+x= GarageType 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and train_data[[x]]
+Kruskal-Wallis chi-squared = 532.7, df = 6, p-value &lt; 2.2e-16
+
+x= GarageYrBlt 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and train_data[[x]]
+Kruskal-Wallis chi-squared = 615.92, df = 12, p-value &lt; 2.2e-16
+
+x= GarageFinish 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and train_data[[x]]
+Kruskal-Wallis chi-squared = 609.81, df = 3, p-value &lt; 2.2e-16
+
+x= GarageCars 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and as.factor(train_data[[x]])
+Kruskal-Wallis chi-squared = 702.51, df = 4, p-value &lt; 2.2e-16
+
+x= GarageArea 
+
+    Kendall's rank correlation tau
+
+data:  train_data$SalePrice and train_data[[x]]
+z = 27.204, p-value &lt; 2.2e-16
+alternative hypothesis: true tau is not equal to 0
+sample estimates:
+      tau 
+0.4781465 
+
+x= GarageQual 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and as.factor(train_data[[x]])
+Kruskal-Wallis chi-squared = 192, df = 5, p-value &lt; 2.2e-16
+
+x= GarageCond 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and as.factor(train_data[[x]])
+Kruskal-Wallis chi-squared = 190.96, df = 5, p-value &lt; 2.2e-16
+
+x= PavedDrive 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and train_data[[x]]
+Kruskal-Wallis chi-squared = 115.84, df = 2, p-value &lt; 2.2e-16
+
+x= WoodDeckSF 
+
+    Kendall's rank correlation tau
+
+data:  train_data$SalePrice and train_data[[x]]
+z = 13.684, p-value &lt; 2.2e-16
+alternative hypothesis: true tau is not equal to 0
+sample estimates:
+      tau 
+0.2603486 
+
+x= OpenPorchSF 
+
+    Kendall's rank correlation tau
+
+data:  train_data$SalePrice and train_data[[x]]
+z = 18.724, p-value &lt; 2.2e-16
+alternative hypothesis: true tau is not equal to 0
+sample estimates:
+     tau 
+0.350161 
+
+x= EnclosedPorch 
+
+    Kendall's rank correlation tau
+
+data:  train_data$SalePrice and train_data[[x]]
+z = -8.3273, p-value &lt; 2.2e-16
+alternative hypothesis: true tau is not equal to 0
+sample estimates:
+       tau 
+-0.1720941 
+
+x= X3SsnPorch 
+
+    Kendall's rank correlation tau
+
+data:  train_data$SalePrice and train_data[[x]]
+z = 2.5075, p-value = 0.01216
+alternative hypothesis: true tau is not equal to 0
+sample estimates:
+       tau 
+0.05347771 
+
+x= ScreenPorch 
+
+    Kendall's rank correlation tau
+
+data:  train_data$SalePrice and train_data[[x]]
+z = 3.8416, p-value = 0.0001222
+alternative hypothesis: true tau is not equal to 0
+sample estimates:
+       tau 
+0.08065437 
+
+x= PoolArea 
+
+    Kendall's rank correlation tau
+
+data:  train_data$SalePrice and train_data[[x]]
+z = 2.2349, p-value = 0.02542
+alternative hypothesis: true tau is not equal to 0
+sample estimates:
+       tau 
+0.04780012 
+
+x= PoolQC 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and as.factor(train_data[[x]])
+Kruskal-Wallis chi-squared = 5.9957, df = 3, p-value = 0.1118
+
+x= Fence 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and as.factor(train_data[[x]])
+Kruskal-Wallis chi-squared = 78.023, df = 4, p-value = 4.567e-16
+
+x= MiscFeature 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and train_data[[x]]
+Kruskal-Wallis chi-squared = 10.654, df = 4, p-value = 0.03075
+
+x= MiscVal 
+
+    Kendall's rank correlation tau
+
+data:  train_data$SalePrice and train_data[[x]]
+z = -2.3973, p-value = 0.01652
+alternative hypothesis: true tau is not equal to 0
+sample estimates:
+        tau 
+-0.05091716 
+
+x= MoSold 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and train_data[[x]]
+Kruskal-Wallis chi-squared = 14.278, df = 11, p-value = 0.218
+
+x= YrSold 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and train_data[[x]]
+Kruskal-Wallis chi-squared = 1.6459, df = 4, p-value = 0.8005
+
+x= SaleType 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and train_data[[x]]
+Kruskal-Wallis chi-squared = 156.38, df = 8, p-value &lt; 2.2e-16
+
+x= SaleCondition 
+
+    Kruskal-Wallis rank sum test
+
+data:  train_data$SalePrice and train_data[[x]]
+Kruskal-Wallis chi-squared = 168.32, df = 5, p-value &lt; 2.2e-16</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>train_data <span class="ot">&lt;-</span> train_data <span class="sc">|&gt;</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>Street, <span class="sc">-</span>Utilities, <span class="sc">-</span>LandSlope, <span class="sc">-</span>BsmtFinSF2, <span class="sc">-</span>BsmtHalfBath, <span class="sc">-</span>PoolQC, <span class="sc">-</span>MoSold, <span class="sc">-</span>YrSold)</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>test_data <span class="ot">&lt;-</span> test_data <span class="sc">|&gt;</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>Street, <span class="sc">-</span>Utilities, <span class="sc">-</span>LandSlope, <span class="sc">-</span>BsmtFinSF2, <span class="sc">-</span>BsmtHalfBath, <span class="sc">-</span>PoolQC, <span class="sc">-</span>MoSold, <span class="sc">-</span>YrSold)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
 <section id="split-data" class="level2">
 <h2 class="anchored" data-anchor-id="split-data">Split Data</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1024</span>)</span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>split_data <span class="ot">&lt;-</span> <span class="fu">initial_split</span>(train_data)</span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>fold_data <span class="ot">&lt;-</span> <span class="fu">vfold_cv</span>(train_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1024</span>)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>split_data <span class="ot">&lt;-</span> <span class="fu">initial_split</span>(train_data)</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>fold_data <span class="ot">&lt;-</span> <span class="fu">vfold_cv</span>(train_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="create-model" class="level2">
 <h2 class="anchored" data-anchor-id="create-model">Create Model</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">boost_tree</span>(</span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">mtry=</span><span class="fu">tune</span>(), <span class="at">trees=</span><span class="dv">1000</span>, <span class="at">min_n=</span><span class="fu">tune</span>(),</span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">tree_depth=</span><span class="dv">10</span>, <span class="at">learn_rate=</span><span class="fl">0.01</span>) <span class="sc">|&gt;</span></span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_engine</span>(<span class="st">"xgboost"</span>, <span class="at">nthread=</span><span class="dv">8</span>, <span class="at">counts=</span><span class="cn">FALSE</span>) <span class="sc">|&gt;</span></span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_mode</span>(<span class="st">"regression"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">boost_tree</span>(</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">mtry=</span><span class="fu">tune</span>(), <span class="at">trees=</span><span class="dv">1000</span>, <span class="at">min_n=</span><span class="fu">tune</span>(),</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">tree_depth=</span><span class="dv">10</span>, <span class="at">learn_rate=</span><span class="fl">0.01</span>) <span class="sc">|&gt;</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_engine</span>(<span class="st">"xgboost"</span>, <span class="at">nthread=</span><span class="dv">8</span>, <span class="at">counts=</span><span class="cn">FALSE</span>) <span class="sc">|&gt;</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_mode</span>(<span class="st">"regression"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="create-recipe" class="level2">
 <h2 class="anchored" data-anchor-id="create-recipe">Create Recipe</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>recipe <span class="ot">&lt;-</span> <span class="fu">recipe</span>(SalePrice <span class="sc">~</span> ., <span class="at">data=</span>split_data) <span class="sc">|&gt;</span></span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_impute_knn</span>(</span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    MSZoning, LotFrontage, Utilities, Electrical,</span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">impute_with=</span><span class="fu">imp_vars</span>(</span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>      MSSubClass, Street, Neighborhood,</span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_impute_knn</span>(</span>
-<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>    Exterior1st, Exterior2nd, MasVnrType,</span>
-<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">impute_with=</span><span class="fu">imp_vars</span>(</span>
-<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>      MasVnrArea, ExterQual, ExterCond</span>
-<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_impute_knn</span>(</span>
-<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>    BsmtQual, BsmtCond, BsmtExposure, BsmtFinType2,</span>
-<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>    BsmtFullBath, BsmtHalfBath,</span>
-<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">impute_with=</span><span class="fu">imp_vars</span>(</span>
-<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>      BsmtFinType1, BsmtFinSF1, BsmtFinSF2,</span>
-<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a>      BsmtUnfSF, TotalBsmtSF</span>
-<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_impute_knn</span>(</span>
-<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a>    GarageYrBlt, GarageFinish, GarageCars,</span>
-<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a>    GarageArea, GarageQual, GarageCond,</span>
-<span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">impute_with=</span><span class="fu">imp_vars</span>(GarageType)</span>
-<span id="cb14-26"><a href="#cb14-26" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb14-27"><a href="#cb14-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_impute_knn</span>(</span>
-<span id="cb14-28"><a href="#cb14-28" aria-hidden="true" tabindex="-1"></a>    KitchenQual,</span>
-<span id="cb14-29"><a href="#cb14-29" aria-hidden="true" tabindex="-1"></a>    <span class="at">impute_with=</span><span class="fu">imp_vars</span>(KitchenAbvGr)</span>
-<span id="cb14-30"><a href="#cb14-30" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb14-31"><a href="#cb14-31" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_impute_knn</span>(</span>
-<span id="cb14-32"><a href="#cb14-32" aria-hidden="true" tabindex="-1"></a>    PoolQC,</span>
-<span id="cb14-33"><a href="#cb14-33" aria-hidden="true" tabindex="-1"></a>    <span class="at">impute_with=</span><span class="fu">imp_vars</span>(PoolArea)</span>
-<span id="cb14-34"><a href="#cb14-34" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb14-35"><a href="#cb14-35" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_impute_knn</span>(</span>
-<span id="cb14-36"><a href="#cb14-36" aria-hidden="true" tabindex="-1"></a>    SaleType,</span>
-<span id="cb14-37"><a href="#cb14-37" aria-hidden="true" tabindex="-1"></a>    <span class="at">impute_with=</span><span class="fu">imp_vars</span>(SaleCondition)</span>
-<span id="cb14-38"><a href="#cb14-38" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb14-39"><a href="#cb14-39" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_dummy</span>(</span>
-<span id="cb14-40"><a href="#cb14-40" aria-hidden="true" tabindex="-1"></a>    <span class="fu">all_nominal_predictors</span>(),</span>
-<span id="cb14-41"><a href="#cb14-41" aria-hidden="true" tabindex="-1"></a>    <span class="at">one_hot=</span><span class="cn">TRUE</span></span>
-<span id="cb14-42"><a href="#cb14-42" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>recipe <span class="ot">&lt;-</span> <span class="fu">recipe</span>(SalePrice <span class="sc">~</span> ., <span class="at">data=</span>split_data) <span class="sc">|&gt;</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_impute_knn</span>(</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>    MSZoning, LotFrontage, Electrical,</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">impute_with=</span><span class="fu">imp_vars</span>(</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>      MSSubClass, Neighborhood</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_impute_knn</span>(</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>    Exterior1st, Exterior2nd, MasVnrType,</span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">impute_with=</span><span class="fu">imp_vars</span>(</span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>      MasVnrArea, ExterQual, ExterCond</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_impute_knn</span>(</span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>    BsmtQual, BsmtCond, BsmtExposure, BsmtFinType2, BsmtFullBath,</span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">impute_with=</span><span class="fu">imp_vars</span>(</span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>      BsmtFinType1, BsmtFinSF1, BsmtUnfSF, TotalBsmtSF</span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_impute_knn</span>(</span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a>    GarageYrBlt, GarageFinish, GarageCars, GarageArea, GarageQual, GarageCond,</span>
+<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">impute_with=</span><span class="fu">imp_vars</span>(GarageType)</span>
+<span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb17-24"><a href="#cb17-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_impute_knn</span>(</span>
+<span id="cb17-25"><a href="#cb17-25" aria-hidden="true" tabindex="-1"></a>    KitchenQual,</span>
+<span id="cb17-26"><a href="#cb17-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">impute_with=</span><span class="fu">imp_vars</span>(KitchenAbvGr)</span>
+<span id="cb17-27"><a href="#cb17-27" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb17-28"><a href="#cb17-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_impute_knn</span>(</span>
+<span id="cb17-29"><a href="#cb17-29" aria-hidden="true" tabindex="-1"></a>    SaleType,</span>
+<span id="cb17-30"><a href="#cb17-30" aria-hidden="true" tabindex="-1"></a>    <span class="at">impute_with=</span><span class="fu">imp_vars</span>(SaleCondition)</span>
+<span id="cb17-31"><a href="#cb17-31" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb17-32"><a href="#cb17-32" aria-hidden="true" tabindex="-1"></a>  <span class="fu">step_dummy</span>(</span>
+<span id="cb17-33"><a href="#cb17-33" aria-hidden="true" tabindex="-1"></a>    <span class="fu">all_nominal_predictors</span>(),</span>
+<span id="cb17-34"><a href="#cb17-34" aria-hidden="true" tabindex="-1"></a>    <span class="at">one_hot=</span><span class="cn">TRUE</span></span>
+<span id="cb17-35"><a href="#cb17-35" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="create-workflow" class="level2">
 <h2 class="anchored" data-anchor-id="create-workflow">Create Workflow</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>workflow <span class="ot">&lt;-</span> <span class="fu">workflow</span>() <span class="sc">|&gt;</span></span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_recipe</span>(recipe) <span class="sc">|&gt;</span></span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_model</span>(model)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>workflow <span class="ot">&lt;-</span> <span class="fu">workflow</span>() <span class="sc">|&gt;</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_recipe</span>(recipe) <span class="sc">|&gt;</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_model</span>(model)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="tune-model" class="level2">
 <h2 class="anchored" data-anchor-id="tune-model">Tune Model</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>tune <span class="ot">&lt;-</span> workflow <span class="sc">|&gt;</span></span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tune_bayes</span>(</span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">resamples=</span>fold_data,</span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">param_info=</span><span class="fu">parameters</span>(</span>
-<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>      <span class="at">mtry=</span><span class="fu">mtry_prop</span>(), <span class="fu">min_n</span>()</span>
-<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>    ),</span>
-<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">metrics=</span><span class="fu">metric_set</span>(rmse, rsq)</span>
-<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>tune <span class="sc">|&gt;</span> <span class="fu">autoplot</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>tune <span class="ot">&lt;-</span> workflow <span class="sc">|&gt;</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tune_bayes</span>(</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">resamples=</span>fold_data,</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">param_info=</span><span class="fu">parameters</span>(</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>      <span class="at">mtry=</span><span class="fu">mtry_prop</span>(), <span class="fu">min_n</span>()</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">metrics=</span><span class="fu">metric_set</span>(rmse, rsq)</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>tune <span class="sc">|&gt;</span> <span class="fu">autoplot</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="House-Prices_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid" width="672"></p>
+<p><img src="House-Prices_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid" width="672"></p>
 </div>
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>tune <span class="sc">|&gt;</span> <span class="fu">show_best</span>(<span class="at">metric=</span><span class="st">"rmse"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>tune <span class="sc">|&gt;</span> <span class="fu">show_best</span>(<span class="at">metric=</span><span class="st">"rmse"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 5 × 9
-  min_n  mtry .metric .estimator   mean     n std_err .config              .iter
-  &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;   &lt;chr&gt;       &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;                &lt;int&gt;
-1    27 0.110 rmse    standard   0.0536    10 0.00285 Iter6                    6
-2    28 0.134 rmse    standard   0.0537    10 0.00287 Iter9                    9
-3    26 0.192 rmse    standard   0.0538    10 0.00276 Iter1                    1
-4    28 0.208 rmse    standard   0.0538    10 0.00272 Iter4                    4
-5    25 0.193 rmse    standard   0.0538    10 0.00272 Preprocessor1_Model4     0</code></pre>
+  min_n  mtry .metric .estimator   mean     n std_err .config .iter
+  &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;   &lt;chr&gt;       &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;   &lt;int&gt;
+1     6 0.100 rmse    standard   0.0519    10 0.00257 Iter4       4
+2     5 0.107 rmse    standard   0.0520    10 0.00262 Iter6       6
+3     5 0.102 rmse    standard   0.0521    10 0.00256 Iter7       7
+4     2 0.101 rmse    standard   0.0522    10 0.00252 Iter2       2
+5     6 0.117 rmse    standard   0.0524    10 0.00257 Iter9       9</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>tune <span class="sc">|&gt;</span> <span class="fu">show_best</span>(<span class="at">metric=</span><span class="st">"rsq"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>tune <span class="sc">|&gt;</span> <span class="fu">show_best</span>(<span class="at">metric=</span><span class="st">"rsq"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 5 × 9
-  min_n  mtry .metric .estimator  mean     n std_err .config              .iter
-  &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;   &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;                &lt;int&gt;
-1    27 0.110 rsq     standard   0.906    10 0.00742 Iter6                    6
-2    28 0.134 rsq     standard   0.906    10 0.00729 Iter9                    9
-3    28 0.208 rsq     standard   0.906    10 0.00670 Iter4                    4
-4    26 0.192 rsq     standard   0.906    10 0.00678 Iter1                    1
-5    25 0.193 rsq     standard   0.905    10 0.00664 Preprocessor1_Model4     0</code></pre>
+  min_n  mtry .metric .estimator  mean     n std_err .config .iter
+  &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;   &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;   &lt;int&gt;
+1     6 0.100 rsq     standard   0.912    10 0.00698 Iter4       4
+2     5 0.107 rsq     standard   0.912    10 0.00758 Iter6       6
+3     2 0.101 rsq     standard   0.912    10 0.00735 Iter2       2
+4     5 0.102 rsq     standard   0.912    10 0.00739 Iter7       7
+5     6 0.117 rsq     standard   0.910    10 0.00731 Iter9       9</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>params <span class="ot">&lt;-</span> tune <span class="sc">|&gt;</span> <span class="fu">select_best</span>(<span class="at">metric=</span><span class="st">"rmse"</span>)</span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>final <span class="ot">&lt;-</span> workflow <span class="sc">|&gt;</span> <span class="fu">finalize_workflow</span>(params)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>params <span class="ot">&lt;-</span> tune <span class="sc">|&gt;</span> <span class="fu">select_best</span>(<span class="at">metric=</span><span class="st">"rmse"</span>)</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>final <span class="ot">&lt;-</span> workflow <span class="sc">|&gt;</span> <span class="fu">finalize_workflow</span>(params)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="validate-model" class="level2">
 <h2 class="anchored" data-anchor-id="validate-model">Validate Model</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>final <span class="sc">|&gt;</span> <span class="fu">last_fit</span>(split_data) <span class="sc">|&gt;</span> <span class="fu">collect_metrics</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>final <span class="sc">|&gt;</span> <span class="fu">last_fit</span>(split_data) <span class="sc">|&gt;</span> <span class="fu">collect_metrics</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 2 × 4
   .metric .estimator .estimate .config             
   &lt;chr&gt;   &lt;chr&gt;          &lt;dbl&gt; &lt;chr&gt;               
-1 rmse    standard      0.0489 Preprocessor1_Model1
-2 rsq     standard      0.923  Preprocessor1_Model1</code></pre>
+1 rmse    standard      0.0463 Preprocessor1_Model1
+2 rsq     standard      0.931  Preprocessor1_Model1</code></pre>
 </div>
 </div>
 </section>
 <section id="test-model" class="level2">
 <h2 class="anchored" data-anchor-id="test-model">Test Model</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>fit <span class="ot">&lt;-</span> final <span class="sc">|&gt;</span> <span class="fu">fit</span>(train_data)</span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>predict <span class="ot">&lt;-</span> fit <span class="sc">|&gt;</span> <span class="fu">predict</span>(test_data) <span class="sc">|&gt;</span></span>
-<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">SalePrice=</span>.pred) <span class="sc">|&gt;</span></span>
-<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">SalePrice=</span><span class="dv">10</span><span class="sc">^</span>SalePrice <span class="sc">|&gt;</span> <span class="fu">round</span>(<span class="dv">0</span>))</span>
-<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>submission <span class="ot">&lt;-</span> test_id <span class="sc">|&gt;</span> </span>
-<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Id) <span class="sc">|&gt;</span></span>
-<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_cols</span>(predict)</span>
-<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(submission)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>fit <span class="ot">&lt;-</span> final <span class="sc">|&gt;</span> <span class="fu">fit</span>(train_data)</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>predict <span class="ot">&lt;-</span> fit <span class="sc">|&gt;</span> <span class="fu">predict</span>(test_data) <span class="sc">|&gt;</span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">SalePrice=</span>.pred) <span class="sc">|&gt;</span></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">SalePrice=</span><span class="dv">10</span><span class="sc">^</span>SalePrice <span class="sc">|&gt;</span> <span class="fu">round</span>(<span class="dv">0</span>))</span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>submission <span class="ot">&lt;-</span> test_id <span class="sc">|&gt;</span> </span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Id) <span class="sc">|&gt;</span></span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_cols</span>(predict)</span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(submission)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Rows: 1,459
 Columns: 2
 $ Id        &lt;int&gt; 1461, 1462, 1463, 1464, 1465, 1466, 1467, 1468, 1469, 1470, …
-$ SalePrice &lt;dbl&gt; 126231, 157438, 182800, 191304, 190255, 173130, 172423, 1634…</code></pre>
+$ SalePrice &lt;dbl&gt; 126833, 158187, 184164, 192850, 188031, 174289, 170760, 1629…</code></pre>
 </div>
 </div>
 </section>

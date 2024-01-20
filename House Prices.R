@@ -281,6 +281,29 @@ train_data |>
   geom_qq(color="slateblue") +
   geom_qq_line(color="royalblue", linewidth=1)+
   theme_bw()
+for(x in columns){
+  if(is.factor(train_data[[x]])){
+    cat(x, "\n")
+    kruskal.test(
+      train_data$SalePrice, train_data[[x]]
+    ) |> print()
+  }else if(is.element(x, sequences)){
+    cat(x, "\n")
+    kruskal.test(
+      train_data$SalePrice, as.factor(train_data[[x]])
+    ) |> print()
+  }else if(is.numeric(train_data[[x]])){
+    cat(x, "\n")
+    cor.test(
+      train_data$SalePrice, train_data[[x]],
+      method="kendall"
+    ) |> print()
+  }
+}
+train_data <- train_data |>
+  select(-Street, -Utilities, -LandSlope, -BsmtFinSF2, -BsmtHalfBath, -PoolQC, -MoSold, -YrSold)
+test_data <- test_data |>
+  select(-Street, -Utilities, -LandSlope, -BsmtFinSF2, -BsmtHalfBath, -PoolQC, -MoSold, -YrSold)
 set.seed(1024)
 split_data <- initial_split(train_data)
 fold_data <- vfold_cv(train_data, strata=SalePrice)
@@ -291,9 +314,9 @@ model <- boost_tree(
   set_mode("regression")
 recipe <- recipe(SalePrice ~ ., data=split_data) |>
   step_impute_knn(
-    MSZoning, LotFrontage, Utilities, Electrical,
+    MSZoning, LotFrontage, Electrical,
     impute_with=imp_vars(
-      MSSubClass, Street, Neighborhood,
+      MSSubClass, Neighborhood
     )
   ) |>
   step_impute_knn(
@@ -303,25 +326,18 @@ recipe <- recipe(SalePrice ~ ., data=split_data) |>
     )
   ) |>
   step_impute_knn(
-    BsmtQual, BsmtCond, BsmtExposure, BsmtFinType2,
-    BsmtFullBath, BsmtHalfBath,
+    BsmtQual, BsmtCond, BsmtExposure, BsmtFinType2, BsmtFullBath,
     impute_with=imp_vars(
-      BsmtFinType1, BsmtFinSF1, BsmtFinSF2,
-      BsmtUnfSF, TotalBsmtSF
+      BsmtFinType1, BsmtFinSF1, BsmtUnfSF, TotalBsmtSF
     )
   ) |>
   step_impute_knn(
-    GarageYrBlt, GarageFinish, GarageCars,
-    GarageArea, GarageQual, GarageCond,
+    GarageYrBlt, GarageFinish, GarageCars, GarageArea, GarageQual, GarageCond,
     impute_with=imp_vars(GarageType)
   ) |>
   step_impute_knn(
     KitchenQual,
     impute_with=imp_vars(KitchenAbvGr)
-  ) |>
-  step_impute_knn(
-    PoolQC,
-    impute_with=imp_vars(PoolArea)
   ) |>
   step_impute_knn(
     SaleType,
