@@ -20,6 +20,7 @@ website:
       - section: "Machine Learning"
         contents:
           - Titanic.qmd
+          - House Prices.qmd
   page-navigation: true
   back-to-top-navigation: true
   page-footer: "Copyright 2024, Haomin Zhang"

@@ -24,10 +24,9 @@ While there was some element of luck involved in surviving, it seems some groups
 Build a predictive model that answers the question: “what sorts of people were more likely to survive?”
 using passenger data.
 
-## Code
+## Set Environment
 
 ```{r}
-#| echo: false
 #| output: false
 library(tidyverse)
 library(tidymodels)
@@ -37,7 +36,7 @@ conflicts_prefer(dplyr::lag())
 conflicts_prefer(recipes::step())
 ```
 
-### Read Data
+## Read Data
 
 ```{r}
 titanic_train <- read.csv("./titanic_train.csv")
@@ -49,7 +48,7 @@ titanic_data <- bind_rows(
 glimpse(titanic_data)
 ```
 
-### Convert Data
+## Convert Data
 
 ```{r}
 titanic_data[titanic_data==""] <- NA
@@ -68,23 +67,19 @@ titanic_data <- titanic_data |>
     Group=n(),
     Fare=round(Fare/Group, 4)
   ) |> ungroup()
+glimpse(titanic_data)
+```
+
+## Draw Plot
+
+```{r}
+#| warning: false
 titanic_train <- titanic_data |>
   filter(From=="train") |>
   select(-From)
 titanic_test <- titanic_data |>
   filter(From=="test") |>
   select(-From,-Survived)
-```
-
-```{r}
-glimpse(titanic_train)
-glimpse(titanic_test)
-```
-
-### Draw Plot
-
-```{r}
-#| warning: false
 titanic_train |>
   ggplot(aes(x=Age, fill=Sex)) +
   geom_histogram(
@@ -120,7 +115,7 @@ titanic_train |>
   theme_bw()
 ```
 
-### Split Data
+## Split Data
 
 ```{r}
 train_data <- titanic_train |>
@@ -131,7 +126,6 @@ train_data <- titanic_train |>
   )
 test_data <- titanic_test |>
   select(
-    PassengerId, 
     Age, Sex, Family, 
     Pclass, Ticket, Fare, Embarked
   )
@@ -140,28 +134,31 @@ split_data <- initial_split(train_data)
 fold_data <- vfold_cv(train_data, strata=Survived)
 ```
 
-### Create Model
+## Create Model
 
 ```{r}
 model <- rand_forest(
-  mode="classification", engine="ranger", trees=1000,
-  mtry=tune(), min_n=tune()
-)
+  mtry=tune(), trees=1000, min_n=tune()
+) |> set_engine(
+  "ranger", num.threads=8
+) |> set_mode("classification")
 ```
 
-### Create Recipe
+## Create Recipe
 
 ```{r}
 recipe <- recipe(Survived ~ ., data=split_data) |>
   step_impute_knn(
-    Age, Fare, Embarked,
-    impute_with=imp_vars(
-      Sex, Family, Pclass, Ticket
-    )
+    Age, 
+    impute_with=imp_vars(Sex, Family)
+  ) |> 
+  step_impute_knn(
+    Fare, Embarked, 
+    impute_with=imp_vars(Pclass, Ticket)
   )
 ```
 
-### Create Workflow
+## Create Workflow
 
 ```{r}
 workflow <- workflow() |>
@@ -169,13 +166,13 @@ workflow <- workflow() |>
   add_model(model)
 ```
 
-### Tune Model
+## Tune Model
 
 ```{r}
 grid <- grid_max_entropy(
-  mtry(c(1,7)),
+  finalize(mtry(), test_data),
   min_n(),
-  size=20
+  size=30
 )
 tune <- workflow |>
   tune_grid(
@@ -186,30 +183,28 @@ tune <- workflow |>
 tune |> autoplot()
 tune |> show_best(metric="accuracy")
 tune |> show_best(metric="roc_auc")
-params <- tune |> select_best(metric="roc_auc")
-final <- workflow |>
-  finalize_workflow(params)
+params <- tune |> select_best(metric="accuracy")
+final <- workflow |> finalize_workflow(params)
 ```
 
-### Validate Model
+## Validate Model
 
 ```{r}
-final |> last_fit(split_data) |>
-  collect_metrics()
+final |> last_fit(split_data) |> collect_metrics()
 ```
 
-### Test Model
+## Test Model
 
 ```{r}
 fit <- final |> fit(train_data)
 predict <- fit |> predict(test_data) |>
   rename(Survived=.pred_class)
-submission <- test_data |>
+submission <- titanic_test |>
   select(PassengerId) |>
   bind_cols(predict)
 glimpse(submission)
 ```
 
-### Score
+## Score
 
 ![Random Forest](./rf_submission.png){width="100%"}
