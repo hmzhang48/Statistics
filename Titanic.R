@@ -99,16 +99,14 @@ recipe <- recipe(Survived ~ ., data=split_data) |>
 workflow <- workflow() |>
   add_recipe(recipe) |>
   add_model(model)
-grid <- grid_max_entropy(
-  finalize(mtry(), test_data), min_n(),
-  size=30
-)
 tune <- workflow |>
   tune_grid(
     resamples=fold_data,
-    grid=grid,
+    param_info=parameters(
+      finalize(mtry(), test_data),
+      min_n()
+    ),
     metrics=metric_set(accuracy, roc_auc),
-    control = control_grid(verbose=TRUE)
   )
 tune |> autoplot()
 tune |> show_best(metric="accuracy")

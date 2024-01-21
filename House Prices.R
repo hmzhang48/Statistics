@@ -218,38 +218,54 @@ test_data <- house_prices_data |>
 test_id <- house_prices_data |>
   filter(From=="test") |>
   select(Id)
+to_factor <- c(
+  "OverallQual", "OverallCond",
+  "ExterQual", "ExterCond",
+  "BsmtQual", "BsmtCond", "BsmtExposure",
+  "BsmtFinType1", "BsmtFinType2",
+  "HeatingQC", "CentralAir",
+  "BsmtFullBath", "BsmtHalfBath",
+  "FullBath", "HalfBath",
+  "BedroomAbvGr", "TotRmsAbvGrd",
+  "KitchenAbvGr", "KitchenQual",
+  "Fireplaces", "FireplaceQu",
+  "GarageCars", "GarageQual", "GarageCond",
+  "PoolQC", "Fence"
+)
+plot_data <- train_data
+for(x in to_factor){
+  plot_data[[x]] <- as.factor(plot_data[[x]])
+}
 columns <- test_data |> colnames()
-sequences <- c("OverallQual", "OverallCond", "ExterQual", "ExterCond", "BsmtQual", "BsmtCond", "BsmtExposure", "BsmtFinType1", "BsmtFinType2", "HeatingQC", "CentralAir", "BsmtFullBath", "BsmtHalfBath", "FullBath", "HalfBath", "BedroomAbvGr", "KitchenAbvGr", "KitchenQual", "TotRmsAbvGrd", "Fireplaces", "FireplaceQu", "GarageCars", "GarageQual", "GarageCond", "PoolQC", "Fence")
 for(x in columns){
-  if(is.factor(train_data[[x]]) | is.element(x, sequences)){
-    barPlot <- train_data |>
-      ggplot(aes(x=as.factor(.data[[x]]))) +
+  if(is.factor(plot_data[[x]])){
+    barPlot <- plot_data |>
+      ggplot(aes(x=.data[[x]])) +
       geom_bar(
         aes(y=after_stat(count)),
         color="royalblue", fill="skyblue"
-      ) + xlab(x) + theme_bw()
-    boxPlot <- train_data |>
+      ) + theme_bw()
+    boxPlot <- plot_data |>
       ggplot(aes(y=SalePrice)) +
       geom_boxplot(
-        aes(x=as.factor(.data[[x]])),
+        aes(x=.data[[x]]),
         color="royalblue", fill="skyblue"
       ) + scale_y_continuous(
         breaks= seq(0, 800000, by=100000), labels=comma
-      ) + xlab(x) + theme_bw()
+      ) + theme_bw()
     (barPlot | boxPlot) |> print()
-  }else if(is.numeric(train_data[[x]])){
-    IQR <- train_data |>
-      select(x) |>
+  }else if(is.numeric(plot_data[[x]])){
+    IQR <- plot_data |> select({{x}}) |>
       filter(.data[[x]]!=0) |>
       unlist() |> IQR(na.rm=TRUE)
     width <- round(IQR/5, 0) + 1
-    histogramPlot <- train_data |>
+    histogramPlot <- plot_data |>
       ggplot(aes(x=.data[[x]])) +
       geom_histogram(
         na.rm=TRUE, binwidth=width, center=width/2,
         color="royalblue", fill="skyblue"
       ) + theme_bw()
-    pointPlot <- train_data |>
+    pointPlot <- plot_data |>
       ggplot(aes(y=SalePrice)) +
       geom_point(
         aes(x=.data[[x]]), na.rm=TRUE, color="royalblue"
@@ -281,21 +297,41 @@ train_data |>
   geom_qq(color="slateblue") +
   geom_qq_line(color="royalblue", linewidth=1)+
   theme_bw()
+shapiro.test(train_data$SalePrice)
 for(x in columns){
-  if(is.factor(train_data[[x]])){
-    cat(x, "\n")
+  if(is.factor(plot_data[[x]])){
+    cat("Shapiro-Wilk normality test: \n")
+    plot_data |>
+      group_by(.data[[x]]) |>
+      summarise(p=shapiro.test(SalePrice)$p.value)|>
+      mutate(result=if_else(p<0.05, "True", "False")) |>
+      select(-p) |> print()
+    cat("\n")
+    cat("Fligner-Killeen test of homogeneity of variances: \n")
+    p <- fligner.test(
+      plot_data$SalePrice, plot_data[[x]]
+    )$p.value
+    result <- if_else(p<0.05, "True", "False")
+    tibble(column=x, result=result) |> print()
+    cat("\n")
+  }else if(is.numeric(plot_data[[x]])){
+    cat("Shapiro-Wilk normality test: \n")
+    p <- shapiro.test(plot_data[[x]])$p.value
+    result <- if_else(p<0.05, "True", "False")
+    tibble(column=x, result=result) |> print()
+    cat("\n")
+  }
+}
+for(x in columns){
+  if(is.factor(plot_data[[x]])){
+    cat("x=", x, "\n")
     kruskal.test(
-      train_data$SalePrice, train_data[[x]]
+      plot_data$SalePrice, plot_data[[x]]
     ) |> print()
-  }else if(is.element(x, sequences)){
-    cat(x, "\n")
-    kruskal.test(
-      train_data$SalePrice, as.factor(train_data[[x]])
-    ) |> print()
-  }else if(is.numeric(train_data[[x]])){
-    cat(x, "\n")
+  }else if(is.numeric(plot_data[[x]])){
+    cat("x=", x, "\n")
     cor.test(
-      train_data$SalePrice, train_data[[x]],
+      plot_data$SalePrice, plot_data[[x]],
       method="kendall"
     ) |> print()
   }
