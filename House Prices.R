@@ -297,31 +297,62 @@ train_data |>
   geom_qq(color="slateblue") +
   geom_qq_line(color="royalblue", linewidth=1)+
   theme_bw()
-shapiro.test(train_data$SalePrice)
+Features <- c()
+Normality <- c()
 for(x in columns){
   if(is.factor(plot_data[[x]])){
-    cat("Shapiro-Wilk normality test: \n")
-    plot_data |>
+    result <- plot_data |>
       group_by(.data[[x]]) |>
-      summarise(p=shapiro.test(SalePrice)$p.value)|>
-      mutate(result=if_else(p<0.05, "True", "False")) |>
-      select(-p) |> print()
-    cat("\n")
-    cat("Fligner-Killeen test of homogeneity of variances: \n")
-    p <- fligner.test(
-      plot_data$SalePrice, plot_data[[x]]
-    )$p.value
-    result <- if_else(p<0.05, "True", "False")
-    tibble(column=x, result=result) |> print()
-    cat("\n")
+      summarise(
+        Result=tryCatch({
+          if_else(
+              shapiro.test(SalePrice)$p.value>=0.05,
+              TRUE, FALSE
+            )
+        },error=\(e){NA})
+      )
+    Features <- Features |> append(x)
+    Normality <- Normality |> append(
+      if_else(
+        result |> filter(Result==FALSE) |> nrow() == 0,
+        TRUE, FALSE
+      )
+    )
   }else if(is.numeric(plot_data[[x]])){
-    cat("Shapiro-Wilk normality test: \n")
-    p <- shapiro.test(plot_data[[x]])$p.value
-    result <- if_else(p<0.05, "True", "False")
-    tibble(column=x, result=result) |> print()
-    cat("\n")
+    Features <- Features |> append(x)
+    Normality <- Normality |> append(
+      if_else(
+        shapiro.test(plot_data[[x]])$p.value>=0.05,
+        TRUE, FALSE
+      )
+    )
   }
 }
+Features <- Features |> append("SalePrice")
+Normality <- Normality |> append(
+  if_else(
+    shapiro.test(train_data$SalePrice)$p.value>=0.05,
+    TRUE, FALSE
+  )
+)
+tibble(Features, Normality) |> print(n=80)
+Features <- c()
+Homogeneity <- c()
+for(x in columns){
+  if(is.factor(plot_data[[x]])){
+    Features <- Features |> append(x)
+    Homogeneity <- Homogeneity |>
+      append(
+        if_else(
+          fligner.test(
+            plot_data$SalePrice, plot_data[[x]]
+          )$p.value>=0.05,
+          TRUE, FALSE
+        )
+      )
+  }
+}
+tibble(Features, Homogeneity) |> print(n=59)
 for(x in columns){
   if(is.factor(plot_data[[x]])){
     cat("x=", x, "\n")
